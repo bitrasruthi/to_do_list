@@ -7,6 +7,7 @@ import {
   FormControl,
   FormHelperText,
   Grid,
+  IconButton,
   MenuItem,
   OutlinedInput,
   Select,
@@ -19,6 +20,7 @@ import { makeStyles } from "@mui/styles";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import moment from "moment";
+import { useSnackbar } from "notistack";
 
 const useStyles = makeStyles((theme) => ({
   dialog: {
@@ -40,6 +42,7 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 400,
     borderRadius: "5px",
     border: "1px solid #c4c4c4",
+    fontFamily: "Poppins",
   },
 }));
 
@@ -47,6 +50,7 @@ const priorityList = [1, 2, 3, 4, 5];
 
 function TaskPopup(props) {
   const classes = useStyles();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { confirmDialog, setConfirmDialog, setMainData, data, setCreatedAt } =
     props;
 
@@ -78,6 +82,14 @@ function TaskPopup(props) {
       setCreatedAt(moment(new Date()).format("DD/MM/YYYY kk:mm"));
       setConfirmDialog({ ...confirmDialog, isOpen: false });
       resetForm();
+      enqueueSnackbar("Task added successfully", {
+        variant: "success",
+        action: (key) => (
+          <IconButton onClick={() => closeSnackbar(key)} sx={{ color: "#FFF" }}>
+            <CloseIcon />
+          </IconButton>
+        ),
+      });
     },
   });
 
@@ -147,7 +159,7 @@ function TaskPopup(props) {
               </Grid>
               <Grid item xs={12}>
                 <Typography sx={{ mb: 1, mt: 1 }}>Priority:</Typography>
-                <FormControl sx={{ width: " 100%", mt: 2 }}>
+                <FormControl sx={{ width: " 100%" }}>
                   <Select
                     classes={{
                       select: classes.select,

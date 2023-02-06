@@ -7,6 +7,7 @@ import {
   CardContent,
   FormControl,
   Grid,
+  IconButton,
   MenuItem,
   OutlinedInput,
   Paper,
@@ -25,6 +26,8 @@ import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import TaskIcon from "@mui/icons-material/Task";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import ReactExport from "react-export-excel";
+import { SnackbarProvider } from "notistack";
+
 const ExcelFile = ReactExport.ExcelFile;
 const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
 const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
@@ -52,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
       textTransform: "uppercase",
       fontWeight: "bold",
       color: "#bd9cf1",
-      fontSize: "18px",
+      fontSize: "25px",
     },
     "& .add-btn": {
       marginRight: "20px",
@@ -141,343 +144,360 @@ function App() {
   return (
     <React.Fragment>
       <ThemeProvider theme={theme}>
-        <Box className={classes.root}>
-          <Paper
-            elevation={1}
-            sx={{
-              padding: 5,
-              flexGrow: 1,
-            }}
-          >
-            <Box display={"flex"} justifyContent="space-between">
-              <Typography className="main-head">To do list</Typography>
-              <Box display={"flex"}>
-                <Button
-                  size="large"
-                  className="add-btn"
-                  onClick={(e) => {
-                    setConfirmDialog({
-                      isOpen: true,
-                      type: "add",
-                    });
+        <SnackbarProvider
+          autoHideDuration={3000}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          maxSnack={10}
+        >
+          <Box className={classes.root}>
+            <Paper
+              elevation={1}
+              sx={{
+                padding: 5,
+                flexGrow: 1,
+              }}
+            >
+              <Box display={"flex"} justifyContent="space-between">
+                <Typography className="main-head">To do list</Typography>
+                <Box display={"flex"}>
+                  <Button
+                    size="large"
+                    className="add-btn"
+                    onClick={(e) => {
+                      setConfirmDialog({
+                        isOpen: true,
+                        type: "add",
+                      });
+                    }}
+                  >
+                    <AddIcon />
+                    Add Task
+                  </Button>
+                  <ExcelFile
+                    element={
+                      <Button size="large" className="export-btn">
+                        <FileDownloadIcon />
+                        Export Excel
+                      </Button>
+                    }
+                  >
+                    <ExcelSheet
+                      data={tabValue == 0 ? data : inactiveData}
+                      name="To Do List"
+                    >
+                      <ExcelColumn label="Description" value="description" />
+                      <ExcelColumn label="Priority" value="priority" />
+                    </ExcelSheet>
+                  </ExcelFile>
+                </Box>
+              </Box>
+              <Box className="tab-box">
+                <Box
+                  sx={{
+                    borderBottom: 1,
+                    borderColor: "divider",
+                    overflow: "scroll",
                   }}
                 >
-                  <AddIcon />
-                  Add Task
-                </Button>
-                <ExcelFile
-                  element={
-                    <Button size="large" className="export-btn">
-                      <FileDownloadIcon />
-                      Export Excel
-                    </Button>
-                  }
-                >
-                  <ExcelSheet
-                    data={tabValue == 0 ? data : inactiveData}
-                    name="To Do List"
+                  <Tabs
+                    onChange={handleChange}
+                    value={tabValue}
+                    aria-label="lab API tabs example"
                   >
-                    <ExcelColumn label="Description" value="description" />
-                    <ExcelColumn label="Priority" value="priority" />
-                  </ExcelSheet>
-                </ExcelFile>
-              </Box>
-            </Box>
-            <Box className="tab-box">
-              <Box
-                sx={{
-                  borderBottom: 1,
-                  borderColor: "divider",
-                  overflow: "scroll",
-                }}
-              >
-                <Tabs
-                  onChange={handleChange}
-                  value={tabValue}
-                  aria-label="lab API tabs example"
-                >
-                  <Tab label={`Active (${data?.length})`} />
-                  <Tab label={`Inactive (${inactiveData?.length})`} />
-                </Tabs>
-              </Box>
-              {tabValue == 0 ? (
-                data?.length > 0 ? (
-                  data?.map((item, index) => (
-                    <Card key={index} className="card-style">
-                      <CardContent>
-                        <Grid container>
-                          <Grid item xs={11}>
-                            <Typography variant="body2" color="text.secondary">
-                              {item.description}
-                            </Typography>
-                            <Box
-                              sx={{ mt: 2 }}
-                              display={"flex"}
-                              justifyContent="space-between"
-                            >
-                              <Box display={"flex"}>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-head"
-                                >
-                                  Priority:
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-text"
-                                >
-                                  {item.priority}
-                                </Typography>
-                              </Box>
-                              <Box display={"flex"}>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-head"
-                                >
-                                  Status:
-                                </Typography>
-                                <FormControl sx={{ width: " 100%", ml: 1 }}>
-                                  <Select
-                                    classes={{
-                                      select: classes.select,
-                                      icon: classes.iconUp,
-                                      iconOpen: classes.iconOpen,
-                                    }}
-                                    name="status"
-                                    fullWidth
-                                    displayEmpty
-                                    size="small"
-                                    value={selectedStatus}
-                                    onChange={(e) => {
-                                      setSelectedStatus(e.target.value);
-                                    }}
-                                    input={<OutlinedInput />}
-                                    renderValue={(selected) => {
-                                      return selected
-                                        ? selected
-                                        : "Please Select";
-                                    }}
-                                    sx={{ height: "20px" }}
-                                    inputProps={{
-                                      "aria-label": "Without label",
-                                    }}
+                    <Tab label={`Active (${data?.length})`} />
+                    <Tab label={`Inactive (${inactiveData?.length})`} />
+                  </Tabs>
+                </Box>
+                {tabValue == 0 ? (
+                  data?.length > 0 ? (
+                    data?.map((item, index) => (
+                      <Card key={index} className="card-style">
+                        <CardContent>
+                          <Grid container>
+                            <Grid item xs={11}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {item.description}
+                              </Typography>
+                              <Box
+                                sx={{ mt: 2 }}
+                                display={"flex"}
+                                justifyContent="space-between"
+                              >
+                                <Box display={"flex"}>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-head"
                                   >
-                                    {statusList.map((item, i) => (
-                                      <MenuItem
-                                        key={i}
-                                        value={item}
-                                        onClick={() => {
-                                          setSelectedStatus(item);
-                                        }}
-                                      >
-                                        {item}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
-                              </Box>
-                              <Box display={"flex"}>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-head"
-                                >
-                                  Created at:
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-text"
-                                >
-                                  {createAt}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={1}>
-                            <Box
-                              sx={{ width: "20%" }}
-                              display={"flex"}
-                              justifyContent="space-between"
-                            >
-                              <Tooltip title="Edit">
-                                <ModeEditIcon
-                                  onClick={(e) => {
-                                    setConfirmDialog({
-                                      isOpen: true,
-                                      type: "edit",
-                                      item: item,
-                                      onConfirm: (values) => {
-                                        handleUpdate(index, values);
-                                      },
-                                    });
-                                  }}
-                                  className="icons-style"
-                                />
-                              </Tooltip>
-                              <Tooltip title="Delete">
-                                <DeleteIcon
-                                  onClick={(e) => {
-                                    setConfirmDialog({
-                                      isOpen: true,
-                                      type: "inactivate",
-                                      onConfirm: () => {
-                                        handleDelete(index);
-                                      },
-                                    });
-                                  }}
-                                  className="icons-style"
-                                />
-                              </Tooltip>
-                            </Box>
-                          </Grid>
-                        </Grid>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <Typography sx={{ textAlign: "center", mt: 5 }}>
-                    No tasks available
-                  </Typography>
-                )
-              ) : tabValue == 1 ? (
-                inactiveData?.length > 0 ? (
-                  inactiveData?.map((item, index) => (
-                    <Card
-                      key={index}
-                      sx={{ width: "100%", mt: 1 }}
-                      className="card-style"
-                    >
-                      <CardContent>
-                        <Grid container>
-                          <Grid item xs={11.5}>
-                            <Typography variant="body2" color="text.secondary">
-                              {item.description}
-                            </Typography>
-                            <Box
-                              sx={{ mt: 2 }}
-                              display={"flex"}
-                              justifyContent="space-between"
-                            >
-                              <Box display={"flex"}>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-head"
-                                >
-                                  Priority:
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-text"
-                                >
-                                  {item.priority}
-                                </Typography>
-                              </Box>
-                              <Box display={"flex"}>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-head"
-                                >
-                                  Created at:
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-text"
-                                >
-                                  {createAt}
-                                </Typography>
-                              </Box>
-                              <Box display={"flex"}>
-                                <Typography
-                                  variant="body2"
-                                  className="sub-head"
-                                >
-                                  Status:
-                                </Typography>
-                                <FormControl sx={{ width: " 100%", ml: 1 }}>
-                                  <Select
-                                    classes={{
-                                      select: classes.select,
-                                      icon: classes.iconUp,
-                                      iconOpen: classes.iconOpen,
-                                    }}
-                                    name="status"
-                                    fullWidth
-                                    displayEmpty
-                                    size="small"
-                                    value={selectedStatus}
-                                    onChange={(e) => {
-                                      setSelectedStatus(e.target.value);
-                                    }}
-                                    input={<OutlinedInput />}
-                                    renderValue={(selected) => {
-                                      return selected
-                                        ? selected
-                                        : "Please Select";
-                                    }}
-                                    sx={{ height: "20px" }}
-                                    inputProps={{
-                                      "aria-label": "Without label",
-                                    }}
+                                    Priority:
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-text"
                                   >
-                                    {statusList.map((item, i) => (
-                                      <MenuItem
-                                        key={i}
-                                        value={item}
-                                        onClick={() => {
-                                          setSelectedStatus(item);
-                                        }}
-                                      >
-                                        {item}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                </FormControl>
+                                    {item.priority}
+                                  </Typography>
+                                </Box>
+                                <Box display={"flex"}>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-head"
+                                  >
+                                    Status:
+                                  </Typography>
+                                  <FormControl sx={{ width: " 100%", ml: 1 }}>
+                                    <Select
+                                      classes={{
+                                        select: classes.select,
+                                        icon: classes.iconUp,
+                                        iconOpen: classes.iconOpen,
+                                      }}
+                                      name="status"
+                                      fullWidth
+                                      displayEmpty
+                                      size="small"
+                                      value={selectedStatus}
+                                      onChange={(e) => {
+                                        setSelectedStatus(e.target.value);
+                                      }}
+                                      input={<OutlinedInput />}
+                                      renderValue={(selected) => {
+                                        return selected
+                                          ? selected
+                                          : "Please Select";
+                                      }}
+                                      sx={{
+                                        height: "20px",
+                                      }}
+                                      inputProps={{
+                                        "aria-label": "Without label",
+                                      }}
+                                    >
+                                      {statusList.map((item, i) => (
+                                        <MenuItem
+                                          key={i}
+                                          value={item}
+                                          onClick={() => {
+                                            setSelectedStatus(item);
+                                          }}
+                                        >
+                                          {item}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Box>
+                                <Box display={"flex"}>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-head"
+                                  >
+                                    Created at:
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-text"
+                                  >
+                                    {createAt}
+                                  </Typography>
+                                </Box>
                               </Box>
-                            </Box>
+                            </Grid>
+                            <Grid item xs={1}>
+                              <Box
+                                sx={{ width: "20%" }}
+                                display={"flex"}
+                                justifyContent="space-between"
+                              >
+                                <Tooltip title="Edit">
+                                  <ModeEditIcon
+                                    onClick={(e) => {
+                                      setConfirmDialog({
+                                        isOpen: true,
+                                        type: "edit",
+                                        item: item,
+                                        onConfirm: (values) => {
+                                          handleUpdate(index, values);
+                                        },
+                                      });
+                                    }}
+                                    className="icons-style"
+                                  />
+                                </Tooltip>
+                                <Tooltip title="Delete">
+                                  <DeleteIcon
+                                    onClick={(e) => {
+                                      setConfirmDialog({
+                                        isOpen: true,
+                                        type: "inactivate",
+                                        onConfirm: () => {
+                                          handleDelete(index);
+                                        },
+                                      });
+                                    }}
+                                    className="icons-style"
+                                  />
+                                </Tooltip>
+                              </Box>
+                            </Grid>
                           </Grid>
-                          <Grid item xs={0.5}>
-                            <Box
-                              sx={{ width: "20%" }}
-                              display={"flex"}
-                              justifyContent="space-between"
-                            >
-                              <Tooltip title="Delete">
-                                <TaskIcon
-                                  onClick={(e) => {
-                                    setConfirmDialog({
-                                      isOpen: true,
-                                      type: "activate",
-                                      onConfirm: () => {
-                                        handleActivate(index);
-                                      },
-                                    });
-                                  }}
-                                  className="icons-style"
-                                />
-                              </Tooltip>
-                            </Box>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <Typography sx={{ textAlign: "center", mt: 5 }}>
+                      No tasks available
+                    </Typography>
+                  )
+                ) : tabValue == 1 ? (
+                  inactiveData?.length > 0 ? (
+                    inactiveData?.map((item, index) => (
+                      <Card
+                        key={index}
+                        sx={{ width: "100%", mt: 1 }}
+                        className="card-style"
+                      >
+                        <CardContent>
+                          <Grid container>
+                            <Grid item xs={11.5}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {item.description}
+                              </Typography>
+                              <Box
+                                sx={{ mt: 2 }}
+                                display={"flex"}
+                                justifyContent="space-between"
+                              >
+                                <Box display={"flex"}>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-head"
+                                  >
+                                    Priority:
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-text"
+                                  >
+                                    {item.priority}
+                                  </Typography>
+                                </Box>
+                                <Box display={"flex"}>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-head"
+                                  >
+                                    Created at:
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-text"
+                                  >
+                                    {createAt}
+                                  </Typography>
+                                </Box>
+                                <Box display={"flex"}>
+                                  <Typography
+                                    variant="body2"
+                                    className="sub-head"
+                                  >
+                                    Status:
+                                  </Typography>
+                                  <FormControl sx={{ width: " 100%", ml: 1 }}>
+                                    <Select
+                                      classes={{
+                                        select: classes.select,
+                                        icon: classes.iconUp,
+                                        iconOpen: classes.iconOpen,
+                                      }}
+                                      name="status"
+                                      fullWidth
+                                      displayEmpty
+                                      size="small"
+                                      value={selectedStatus}
+                                      onChange={(e) => {
+                                        setSelectedStatus(e.target.value);
+                                      }}
+                                      input={<OutlinedInput />}
+                                      renderValue={(selected) => {
+                                        return selected
+                                          ? selected
+                                          : "Please Select";
+                                      }}
+                                      sx={{ height: "20px" }}
+                                      inputProps={{
+                                        "aria-label": "Without label",
+                                      }}
+                                    >
+                                      {statusList.map((item, i) => (
+                                        <MenuItem
+                                          key={i}
+                                          value={item}
+                                          onClick={() => {
+                                            setSelectedStatus(item);
+                                          }}
+                                        >
+                                          {item}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </FormControl>
+                                </Box>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={0.5}>
+                              <Box
+                                sx={{ width: "20%" }}
+                                display={"flex"}
+                                justifyContent="space-between"
+                              >
+                                <Tooltip title="Activate">
+                                  <TaskIcon
+                                    onClick={(e) => {
+                                      setConfirmDialog({
+                                        isOpen: true,
+                                        type: "activate",
+                                        onConfirm: () => {
+                                          handleActivate(index);
+                                        },
+                                      });
+                                    }}
+                                    className="icons-style"
+                                  />
+                                </Tooltip>
+                              </Box>
+                            </Grid>
                           </Grid>
-                        </Grid>
-                      </CardContent>
-                    </Card>
-                  ))
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <Typography sx={{ textAlign: "center", mt: 5 }}>
+                      No tasks available
+                    </Typography>
+                  )
                 ) : (
-                  <Typography sx={{ textAlign: "center", mt: 5 }}>
-                    No tasks available
-                  </Typography>
-                )
-              ) : (
-                ""
-              )}
-            </Box>
-          </Paper>
-        </Box>
-        <TaskPopup
-          confirmDialog={confirmDialog}
-          setConfirmDialog={setConfirmDialog}
-          setMainData={setData}
-          data={data}
-          setCreatedAt={setCreatedAt}
-        />
+                  ""
+                )}
+              </Box>
+            </Paper>
+          </Box>
+          <TaskPopup
+            confirmDialog={confirmDialog}
+            setConfirmDialog={setConfirmDialog}
+            setMainData={setData}
+            data={data}
+            setCreatedAt={setCreatedAt}
+          />
+        </SnackbarProvider>
       </ThemeProvider>
     </React.Fragment>
   );
